@@ -31,7 +31,7 @@ def stock_data_analysis(ticker: str, start_date: str, end_date: str):
 
 
 def list_tickers():
-    Matrix_data = ['AAPL'] # , 'MSFT', 'GOOGL', 'AMZN', 'TSLA'
+    Matrix_data = ['AAPL']# , 'MSFT', 'GOOGL', 'AMZN', 'TSLA'
     return Matrix_data
 
 

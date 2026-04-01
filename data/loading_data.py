@@ -1,11 +1,8 @@
 import pandas as pd
-import kagglehub
 
 
 def load_dataset():
-    path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
-    dataset = pd.read_csv(f"{path}/creditcard.csv")
-    return dataset
+    return pd.read_csv("data/creditcard.csv")
 
 
 def load_fraud_dataset():
