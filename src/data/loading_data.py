@@ -1,8 +1,19 @@
+from pathlib import Path
+
 import pandas as pd
 
 
+DATASET_PATH = Path(__file__).resolve().parent / "creditcard.csv"
+
+
 def load_dataset():
-    return pd.read_csv("src/data/creditcard.csv")
+    if not DATASET_PATH.exists():
+        raise FileNotFoundError(
+            "Dataset introuvable. Lancez `make data` pour telecharger "
+            f"creditcard.csv dans {DATASET_PATH}."
+        )
+
+    return pd.read_csv(DATASET_PATH)
 
 
 def load_fraud_dataset():

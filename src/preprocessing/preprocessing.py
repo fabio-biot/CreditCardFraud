@@ -1,22 +1,20 @@
-from src.data.loading_data import load_dataset, load_fraud_dataset, load_non_fraud_dataset
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.pipeline import make_pipeline, Pipeline
-from sklearn.preprocessing import RobustScaler
-from sklearn.compose import make_column_transformer
-from sklearn.metrics import classification_report, confusion_matrix, precision_recall_curve
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, confusion_matrix
 from xgboost import XGBClassifier
+
+from src.data.loading_data import load_dataset
 
 
 def get_best_model(min_recall: float = 0.8, cv: int = 3):
     """
-    Entraîne un modèle XGBoost sur le dataset et retourne le meilleur modèle GridSearchCV.
+    Entraîne un modele XGBoost et retourne le meilleur modele.
+
     Paramètres :
-        min_recall : float, recall minimal sur la classe fraud pour choisir le threshold
+        min_recall : recall minimal sur la classe fraud
         cv : int, nombre de folds pour GridSearchCV
+
     Retourne :
         best_model : Pipeline entraîné avec le meilleur estimator
         best_threshold : float, threshold optimal pour prédire la classe 1

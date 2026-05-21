@@ -25,13 +25,11 @@ def stock_data_analysis(ticker: str, start_date: str, end_date: str):
     hist_data['Date'] = pd.to_datetime(hist_data['Date'])
     hist_data['MA20'] = hist_data['Close'].rolling(window=20).mean()
     hist_data['MA50'] = hist_data['Close'].rolling(window=50).mean()
-    # hist_data['BB_upper'] = hist_data['MA20'] + 2 * hist_data['Close'].rolling(20).std()
-    # hist_data['BB_lower'] = hist_data['MA20'] - 2 * hist_data['Close'].rolling(20).std()
     return hist_data
 
 
 def list_tickers():
-    Matrix_data = ['AAPL']# , 'MSFT', 'GOOGL', 'AMZN', 'TSLA'
+    Matrix_data = ['AAPL']  # , 'MSFT', 'GOOGL', 'AMZN', 'TSLA'
     return Matrix_data
 
 
@@ -69,12 +67,19 @@ def main():
     print("Checking dependencies:")
     print(f"[OK] pandas {pd.__version__} - Data manipulation ready")
     print(f"[OK] requests {requests.__version__} - Network access ready")
-    print(f"[OK] matplotlib {plt.matplotlib.__version__} - Visualization ready")
+    print(
+        f"[OK] matplotlib {plt.matplotlib.__version__} "
+        "- Visualization ready"
+    )
     print("Analyzing Matrix data...")
     print("Processing 1000 data points...")
     print("Generating visualization...")
     for ticker in tickers:
-        hist_data = stock_data_analysis(ticker, "2020-01-01", "2021-01-01")
+        hist_data = stock_data_analysis(
+            ticker,
+            "2020-01-01",
+            "2021-01-01",
+        )
         plot_stock_data(ticker, hist_data)
     print("Analysis complete!")
     print("Results saved to: matrix_analysis.png}")
