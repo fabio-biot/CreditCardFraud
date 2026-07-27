@@ -1,24 +1,60 @@
 import numpy as np
+from pathlib import Path
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, confusion_matrix
 from xgboost import XGBClassifier
+from joblib import dump, load
 
 from src.data.loading_data import load_dataset
 
+MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "xgboost_fraud_model.joblib"
+THRESHOLD_PATH = Path(__file__).resolve().parent.parent / "models" / "threshold.txt"
 
-def get_best_model(min_recall: float = 0.8, cv: int = 3):
+
+def save_model(model, threshold: float):
+    """Sauvegarde le modèle et le threshold dans le dossier models."""
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    dump(model, MODEL_PATH)
+    with open(THRESHOLD_PATH, "w") as f:
+        f.write(str(threshold))
+    print(f"Modèle sauvegardé : {MODEL_PATH}")
+    print(f"Threshold sauvegardé : {THRESHOLD_PATH}")
+
+
+def load_model():
+    """Charge le modèle et le threshold depuis le dossier models."""
+    if not MODEL_PATH.exists() or not THRESHOLD_PATH.exists():
+        raise FileNotFoundError(
+            "Modèle ou threshold introuvable. "
+            "Entraînez d'abord le modèle avec get_best_model()."
+        )
+    model = load(MODEL_PATH)
+    with open(THRESHOLD_PATH, "r") as f:
+        threshold = float(f.read())
+    return model, threshold
+
+
+def get_best_model(min_recall: float = 0.8, cv: int = 3, force_train: bool = False):
     """
     Entraîne un modele XGBoost et retourne le meilleur modele.
+    Charge depuis le disque si le modèle existe déjà et force_train=False.
 
     Paramètres :
         min_recall : recall minimal sur la classe fraud
         cv : int, nombre de folds pour GridSearchCV
+        force_train : bool, si True, réentraîne même si le modèle existe
 
     Retourne :
         best_model : Pipeline entraîné avec le meilleur estimator
         best_threshold : float, threshold optimal pour prédire la classe 1
     """
+    # Vérifier si le modèle existe déjà
+    if not force_train and MODEL_PATH.exists() and THRESHOLD_PATH.exists():
+        print("Modèle existant trouvé. Chargement depuis le disque...")
+        return load_model()
+    
+    print("Entraînement du modèle...")
     # Chargement des données
     dataset = load_dataset()
     x_data = dataset.drop("Class", axis=1)
@@ -82,5 +118,8 @@ def get_best_model(min_recall: float = 0.8, cv: int = 3):
     print(f"Precision : {best_precision:.2f}")
     print("Confusion Matrix sur test set :")
     print(confusion_matrix(y_test, (y_proba > best_threshold).astype(int)))
+
+    # Sauvegarder le modèle et le threshold
+    save_model(best_model, best_threshold)
 
     return best_model, best_threshold

@@ -5,3 +5,9 @@ __pycache__/
 venv/
 .venv/
 .DS_Store
+creditcard.csv
+data/creditcard.csv
+src/data/creditcard.csv
+models/
+*.joblib
+*.txt

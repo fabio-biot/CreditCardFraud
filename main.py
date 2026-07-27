@@ -3,46 +3,59 @@ from src.preprocessing.preprocessing import get_best_model
 from src.data.loading_data import load_dataset
 
 
+def get_sample_transactions(dataset, n_fraud: int = 1, n_normal: int = 1):
+    """
+    Sélectionne des échantillons aléatoires de transactions fraudeuses et normales.
+    
+    Args:
+        dataset: DataFrame contenant le dataset
+        n_fraud: nombre de transactions fraudeuses à sélectionner
+        n_normal: nombre de transactions normales à sélectionner
+    
+    Returns:
+        list: liste de tuples (transaction_features, true_label)
+    """
+    samples = []
+    
+    fraud_samples = dataset[dataset["Class"] == 1].sample(n=min(n_fraud, len(dataset[dataset["Class"] == 1])))
+    for _, row in fraud_samples.iterrows():
+        features = row.drop("Class").values.reshape(1, -1)
+        samples.append((features, 1))
+    
+    normal_samples = dataset[dataset["Class"] == 0].sample(n=min(n_normal, len(dataset[dataset["Class"] == 0])))
+    for _, row in normal_samples.iterrows():
+        features = row.drop("Class").values.reshape(1, -1)
+        samples.append((features, 0))
+    
+    return samples
+
+
 def main():
-    y_result = 0
     best_model, threshold = get_best_model()
     dataset = load_dataset()
     columns = dataset.drop("Class", axis=1).columns
-    x_topredict = pd.DataFrame([[
-        0, -1.3, -0.08, 2.53,
-        -1, -0.03, 0.3, 0.2, 0.01,
-        0.4, 0.15, -0.551599533, -0.05,
-        -1, -0.3, 1.5, -0.4, 0.5, 0.02579058,
-        0.40399296, 0.251412098, -0.018306778,
-        0.277837576, -0.11047391, 0.066928075, 0.2,
-        -0.189114844, 0.133558377, -0.021053053, 149.62
-    ]], columns=columns)
-
-    data = pd.DataFrame([[
-        472, -3.043540624, -3.157307121, 1.08846278, 2.288643618,
-        1.35980513, -1.064822523, 0.325574266, -0.067793653,
-        -0.270952836, -0.838586565, -0.414575448, -0.50314086,
-        0.676501545, -1.692028933, 2.000634839, 0.666779696,
-        0.599717414, 1.725321007, 0.28334483, 2.102338793,
-        0.661695925, 0.435477209, 1.375965743, -0.293803153,
-        0.279798032, -0.145361715, -0.252773123, 0.035764225, 529
-    ]],  columns=columns)
-
-    y_proba = best_model.predict_proba(x_topredict)[0][1]
-    y_pred = int(y_proba > threshold)
-    print(
-        f"Prediction : {y_pred}, proba fraude : {y_proba:.4f}, "
-        f"valeur réelle : {y_result}"
-    )
-
+    
+    # Sélectionner des exemples réels du dataset
+    samples = get_sample_transactions(dataset, n_fraud=1, n_normal=1)
+    
     print("=" * 100)
-    y_result = 1
-    y_proba = best_model.predict_proba(data)[0][1]
-    y_pred = int(y_proba > threshold)
-    print(
-        f"Prediction : {y_pred}, proba fraude : {y_proba:.4f}, "
-        f"valeur réelle : {y_result}"
-    )
+    print("Exemples de prédictions sur des transactions réelles du dataset :")
+    print("=" * 100)
+    
+    for i, (features, true_label) in enumerate(samples):
+        x_to_predict = pd.DataFrame(features, columns=columns)
+        y_proba = best_model.predict_proba(x_to_predict)[0][1]
+        y_pred = int(y_proba > threshold)
+        
+        label_str = "FRAUDE" if true_label == 1 else "NORMALE"
+        pred_str = "FRAUDE" if y_pred == 1 else "NORMALE"
+        
+        print(f"\nExemple {i + 1} :")
+        print(f"  Type réel : {label_str}")
+        print(f"  Prédiction : {pred_str}")
+        print(f"  Probabilité de fraude : {y_proba:.4f}")
+        print(f"  Seuil : {threshold:.4f}")
+        print(f"  Correct : {'OUI' if y_pred == true_label else 'NON'}")
 
 
 if __name__ == "__main__":
